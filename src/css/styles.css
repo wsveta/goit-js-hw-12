@@ -44,12 +44,13 @@ header {
 
 .input-container {
   position: relative;
+  display: inline;
 }
 .input-container::after {
   position: absolute;
   content: url(../img/search.svg);
   right: 20px;
-  top: 50%;
+  top: 55%;
   transform: translateY(-50%);
   transition: filter 500ms cubic-bezier(0.075, 0.82, 0.165, 1);
 }
@@ -113,6 +114,7 @@ header {
 .load-more {
   height: 66px;
   padding: 0 30px;
+  margin-top: 70px;
   font-size: 20px;
   flex-shrink: 0;
   border-radius: 56px;
@@ -151,6 +153,12 @@ header {
   display: inline-block;
   box-sizing: border-box;
   animation: rotation 1s linear infinite;
+  transition: opacity 0.5s, visibility 0.5s;
+}
+
+.loader-hidden {
+  opacity: 0;
+  visibility: hidden;
 }
 
 @keyframes rotation {

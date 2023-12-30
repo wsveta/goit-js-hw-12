@@ -46,7 +46,7 @@ async function fetchImages(pag, searchQuery) {
 
   if (page === 1) {
     if (resp.data.totalHits === 0) {
-    refs.loadBtn.classList.add('hidden');
+      refs.loadBtn.classList.add('hidden');
       iziToast.show({
         message:
           'Sorry, there are no images matching your search query. Please try again!',
@@ -64,9 +64,10 @@ async function fetchImages(pag, searchQuery) {
 }
 
 async function makeCards(response) {
-  if (response.data.totalHits >= 41) {
-    refs.loadBtn.classList.remove('hidden');
-  }
+  response.data.totalHits <= 40
+    ? refs.loadBtn.classList.add('hidden')
+    : refs.loadBtn.classList.remove('hidden');
+
   const markup = response.data.hits
     .map(
       ({
@@ -102,10 +103,14 @@ async function makeCards(response) {
   refs.gallery.innerHTML += markup;
   refs.images = document.querySelectorAll('.image');
   [...refs.images].map(image =>
-    image.addEventListener(
-      'load',
-      event => (event.target.nextElementSibling.style.display = 'none')
-    )
+    image.addEventListener('load', event => {
+      const loader = event.target.nextElementSibling;
+      loader.classList.add('loader-hidden');
+
+      loader.addEventListener('transitionend', () => {
+        loader.remove();
+      });
+    })
   );
 
   let simplelightbox = new SimpleLightbox('.gallery a', {});
