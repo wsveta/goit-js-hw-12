@@ -16,6 +16,21 @@ axios.defaults.baseURL = 'https://pixabay.com/api/';
 let page = 1;
 let searchQuery = null;
 
+refs.loadBtn.addEventListener('click', async () => {
+  page += 1;
+  const resp = await fetchImages(page, searchQuery);
+ makeCards(resp);
+  if (page === Math.ceil(resp.data.totalHits / 40)) {
+    refs.loadBtn.classList.add('hidden');
+    iziToast.show({
+      message:
+        "We're are sorry, but you've reached the end of search results.",
+      position: 'topRight',
+    });
+    return;
+  }
+});
+
 refs.form.addEventListener('submit', async event => {
   event.preventDefault();
   refs.gallery.innerHTML = '';
@@ -26,9 +41,24 @@ refs.form.addEventListener('submit', async event => {
   if (!searchQuery) {
     return;
   }
-  fetchImages(page, searchQuery)
-    .then(value => makeCards(value))
-    .catch(error => console.log(error));
+    const resp = await fetchImages(page, searchQuery);
+    if (page === 1) {
+      makeCards(resp);
+      if (resp.data.totalHits === 0) {
+        console.log('!');
+        refs.loadBtn.classList.add('hidden');
+        iziToast.show({
+          message:
+          'Sorry, there are no images matching your search query. Please try again!',
+          position: 'topRight',
+        });
+        return;
+      }
+      iziToast.show({
+        message: `Hooray! We found ${resp.data.totalHits} images.`,
+        position: 'topRight',
+      });
+    }
 });
 
 async function fetchImages(pag, searchQuery) {
@@ -42,25 +72,11 @@ async function fetchImages(pag, searchQuery) {
     per_page: 40,
   });
 
-  const resp = await axios.get(`?${params}`);
-
-  if (page === 1) {
-    if (resp.data.totalHits === 0) {
-      refs.loadBtn.classList.add('hidden');
-      iziToast.show({
-        message:
-          'Sorry, there are no images matching your search query. Please try again!',
-        position: 'topRight',
-      });
-      return;
-    }
-    iziToast.show({
-      message: `Hooray! We found ${resp.data.totalHits} images.`,
-      position: 'topRight',
-    });
-  }
-
-  return resp;
+try {
+   return await axios.get(`?${params}`);
+} catch (error) {
+  console.error('Error fetching images:', error);
+}
 }
 
 async function makeCards(response) {
@@ -80,8 +96,8 @@ async function makeCards(response) {
         downloads,
       }) => {
         return `<a href="${largeImageURL}"><div class="photo-card">
-  <img class="image" src="${webformatURL}" alt="${tags}" loading="lazy" />
   <span class="loader"></span>
+  <img class="image" src="${webformatURL}" alt="${tags}"  />
   <div class="info">
     <p class="info-item">
       <b>Likes</b><br>${likes}
@@ -101,15 +117,20 @@ async function makeCards(response) {
     )
     .join('');
   refs.gallery.innerHTML += markup;
+
+  
+
   refs.images = document.querySelectorAll('.image');
   [...refs.images].map(image =>
-    image.addEventListener('load', event => {
-      const loader = event.target.nextElementSibling;
-      loader.classList.add('loader-hidden');
-
-      loader.addEventListener('transitionend', () => {
-        loader.remove();
-      });
+    image.addEventListener('load', async event => {
+      const loader = event.target.previousElementSibling;
+      if (loader !== null) {
+        loader.classList.add('loader-hidden');
+  
+        loader.addEventListener('transitionend', () => {
+          loader.remove();
+        });
+      }
     })
   );
 
@@ -125,20 +146,3 @@ async function makeCards(response) {
   });
 }
 
-refs.loadBtn.addEventListener('click', loadMore);
-
-async function loadMore() {
-  page += 1;
-  fetchImages(page, searchQuery).then(value => {
-    makeCards(value);
-    if (page === Math.ceil(value.data.totalHits / 40)) {
-      refs.loadBtn.classList.add('hidden');
-      iziToast.show({
-        message:
-          "We're are sorry, but you've reached the end of search results.",
-        position: 'topRight',
-      });
-      return;
-    }
-  });
-}
