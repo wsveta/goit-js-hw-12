@@ -138,7 +138,7 @@ async function makeCards(response) {
     refs.gallery.firstElementChild.getBoundingClientRect();
 
   window.scrollBy({
-    top: cardHeight * 2,
+    top: cardHeight / 2,
     behavior: 'smooth',
   });
 }
