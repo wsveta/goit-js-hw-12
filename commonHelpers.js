@@ -15,5 +15,5 @@ import{i as n,a as y,S as b}from"./assets/vendor-a4b265b3.js";(function(){const 
       <b>Downloads</b><br>${g}
     </p>
   </div>
-  </div></a>`).join("");s.gallery.innerHTML+=r,s.images=document.querySelectorAll(".image"),[...s.images].map(e=>e.addEventListener("load",async t=>{const o=t.target.previousElementSibling;o!==null&&(o.classList.add("loader-hidden"),o.addEventListener("transitionend",()=>{o.remove()}))})),new b(".gallery a",{}).refresh();const{height:i}=s.gallery.firstElementChild.getBoundingClientRect();window.scrollBy({top:i*2,behavior:"smooth"})}
+  </div></a>`).join("");s.gallery.innerHTML+=r,s.images=document.querySelectorAll(".image"),[...s.images].map(e=>e.addEventListener("load",async t=>{const o=t.target.previousElementSibling;o!==null&&(o.classList.add("loader-hidden"),o.addEventListener("transitionend",()=>{o.remove()}))})),new b(".gallery a",{}).refresh();const{height:i}=s.gallery.firstElementChild.getBoundingClientRect();window.scrollBy({top:i/2,behavior:"smooth"})}
 //# sourceMappingURL=commonHelpers.js.map
