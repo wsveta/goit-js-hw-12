@@ -10,14 +10,16 @@ const refs = {
   loadBtn: document.querySelector('.load-more'),
 };
 
+const simplelightbox = new SimpleLightbox('.gallery a', {});
+const perPage = 40; /* Amount of images per page */
 let page = 1;
-let searchQuery = null;
+let searchQuery = null; /* Client's input */
 
 refs.loadBtn.addEventListener('click', async () => {
   page += 1;
   const resp = await fetchImages(page, searchQuery);
   makeCards(resp);
-  if (page === Math.ceil(resp.data.totalHits / 40)) {
+  if (page === Math.ceil(resp.data.totalHits / perPage)) {
     refs.loadBtn.classList.add('hidden');
     iziToast.show({
       message: "We're are sorry, but you've reached the end of search results.",
@@ -41,21 +43,25 @@ refs.form.addEventListener('submit', async event => {
     });
     return;
   }
-  const resp = await fetchImages(page, searchQuery);
-  if (resp.data.totalHits === 0) {
-    refs.loadBtn.classList.add('hidden');
+  try {
+    const resp = await fetchImages(page, searchQuery);
+    if (resp.data.totalHits === 0) {
+      refs.loadBtn.classList.add('hidden');
+      iziToast.show({
+        message:
+          'Sorry, there are no images matching your search query. Please try again!',
+        position: 'topRight',
+      });
+      return;
+    }
     iziToast.show({
-      message:
-        'Sorry, there are no images matching your search query. Please try again!',
+      message: `Hooray! We found ${resp.data.totalHits} images.`,
       position: 'topRight',
     });
-    return;
+    makeCards(resp);
+  } catch (error) {
+    console.log(`Error happend: ${error}`);
   }
-  iziToast.show({
-    message: `Hooray! We found ${resp.data.totalHits} images.`,
-    position: 'topRight',
-  });
-  makeCards(resp);
 });
 
 async function fetchImages(pag, searchQuery) {
@@ -66,7 +72,7 @@ async function fetchImages(pag, searchQuery) {
     orientation: 'horizontal',
     safesearch: true,
     page: pag,
-    per_page: 40,
+    per_page: perPage,
   });
 
   try {
@@ -79,7 +85,7 @@ async function fetchImages(pag, searchQuery) {
 }
 
 async function makeCards(response) {
-  response.data.totalHits <= 40
+  response.data.totalHits <= perPage
     ? refs.loadBtn.classList.add('hidden')
     : refs.loadBtn.classList.remove('hidden');
 
@@ -115,7 +121,7 @@ async function makeCards(response) {
       }
     )
     .join('');
-  refs.gallery.innerHTML += markup;
+  refs.gallery.insertAdjacentHTML('beforeend', markup);
 
   refs.images = document.querySelectorAll('.image');
   [...refs.images].map(image =>
@@ -131,7 +137,6 @@ async function makeCards(response) {
     })
   );
 
-  let simplelightbox = new SimpleLightbox('.gallery a', {});
   simplelightbox.refresh();
 
   const { height: cardHeight } =
